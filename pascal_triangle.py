@@ -1,4 +1,11 @@
-n = 20
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("n", type=int)
+arg = parser.parse_args()
+
+n = vars(arg)["n"]
+
 triangle = [[1]]
 
 for i in range(2, n + 1):
