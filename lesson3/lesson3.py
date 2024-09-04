@@ -3,12 +3,20 @@ class Item:
         self._count = count
         self._max_count = max_count
 
-    def update_count(self, val):
+    def _update_count(self, val):
         if 0 <= val <= self._max_count:
             self._count = val
             return True
         else:
             return False
+
+    def _tested(self, val):
+        if val < 0:
+            return 0
+        elif val > self._max_count:
+            return self._max_count
+        else:
+            return val
 
     @property
     def count(self):
