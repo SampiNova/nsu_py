@@ -18,4 +18,5 @@ max_size = len(str(triangle[-1][n // 2])) + 2
 max_line = max_size * n
 
 for i in range(n):
-    print(' ' * ((max_line - max_size * (i + 1)) // 2) + ''.join(map(lambda x: ("{:>" + str(max_size - 1) + "} ").format(x), triangle[i])))
+    ans = ''.join(map(lambda x: ("{:>" + str(max_size - 1) + "} ").format(x), triangle[i]))
+    print(' ' * ((max_line - max_size * (i + 1)) // 2) + ans)
