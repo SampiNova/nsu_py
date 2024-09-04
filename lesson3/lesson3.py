@@ -10,7 +10,7 @@ class Item:
         else:
             return False
 
-    def _tested(self, val):
+    def _test(self, val):
         if val < 0:
             return 0
         elif val > self._max_count:
@@ -23,22 +23,22 @@ class Item:
         return self._count
 
     def __add__(self, num):
-        return self._count + num
+        return self._test(self._count + num)
 
     def __sub__(self, num):
-        return self._count - num
+        return self._test(self._count - num)
 
     def __mul__(self, num):
-        return self._count * num
+        return self._test(self._count * num)
 
     def __iadd__(self, num):
-        self._count += num
+        self._count = self._test(self._count + num)
 
     def __isub__(self, num):
-        self._count -= num
+        self._count = self._test(self._count - num)
 
     def __imul__(self, num):
-        self._count *= num
+        self._count = self._test(self._count * num)
 
     def __lt__(self, num):
         return self._count < num
@@ -87,3 +87,4 @@ class Kiwi(Fruit, Food):
     @property
     def eatable(self):
         return super().eatable and self._ripe
+

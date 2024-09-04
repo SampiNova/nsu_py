@@ -1,8 +1,7 @@
 from random import randint
-import numpy as np
 from math import *
 import os
-
+'''
 # 1
 num1 = randint(100, 999)
 print("1:", num1, num1 // 100 + num1 % 100 // 10 + num1 % 10)
@@ -53,7 +52,7 @@ y = int(input("time = "))
 for _ in range(y):
     x += 0.1 * x
 print("6:", x)
-
+'''
 # 7
 path = input("path = ")
 tree_gen = os.walk(path)
