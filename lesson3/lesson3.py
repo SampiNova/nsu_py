@@ -88,3 +88,44 @@ class Kiwi(Fruit, Food):
     def eatable(self):
         return super().eatable and self._ripe
 
+
+class Mango(Fruit, Food):
+    def __init__(self, color, ripe, count=1, max_count=50, saturation=5):
+        super().__init__(ripe=ripe, count=count, max_count=max_count, saturation=saturation)
+        self.color = color
+
+    @property
+    def color(self):
+        return self.color
+
+    @property
+    def eatable(self):
+        return super().eatable and self._ripe
+
+
+class Biscuit(Food):
+    def __int__(self, mode, saturation):
+        super().__init__(saturation=saturation)
+        self.mode = mode
+
+    @property
+    def mode(self):
+        return self.mode
+
+    @property
+    def eatable(self):
+        return super().eatable()
+
+
+class Pasta(Food):
+    def __int__(self, mode, saturation):
+        super().__init__(saturation=saturation)
+        self.mode = mode
+
+    @property
+    def mode(self):
+        return self.mode
+
+    @property
+    def eatable(self):
+        return super().eatable()
