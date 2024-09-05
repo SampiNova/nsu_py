@@ -174,9 +174,6 @@ class Inventory:
     def __getitem__(self, idx):
         return self.inventory[idx]
 
-    def __get__(self, instance, owner):
-        pass
-
 
 kiwi = Kiwi("green", True, 6)
 pasta = Pasta("pesto", count=2, max_count=10)
