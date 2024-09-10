@@ -1,10 +1,20 @@
 import numpy as np
 from random import choices
+import argparse
 
-n = 10
-x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-y = [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10]
-P = 0.2
+parser = argparse.ArgumentParser()
+parser.add_argument("txt1", type=str)
+parser.add_argument("txt2", type=str)
+parser.add_argument("P", type=float)
+arg = parser.parse_args()
+
+name1, name2, P = vars(arg)["txt1"], vars(arg)["txt2"], vars(arg)["P"]
+
+with open(name1, "r") as file:
+    x = list(map(int, file.readline().split(' ')))
+with open(name2, "r") as file:
+    y = list(map(int, file.readline().split(' ')))
+n = len(x)
 
 # 1
 t1 = choices(x, k=n - round(n * P))
