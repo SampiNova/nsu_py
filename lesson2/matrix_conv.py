@@ -1,7 +1,7 @@
 mat1 = list()
 mat2 = list()
 
-with open("lesson2\\matrix_conv.txt", "r") as file:
+with open("matrix_conv.txt", "r") as file:
     flag = 1
     for line in file.readlines():
         tmp = line[:-1].split(' ')
@@ -23,6 +23,6 @@ for i in range(ny - my + 1):
             for y in range(my):
                 res[i][j] += mat1[i + y][j + x] * mat2[y][x]
 
-with open("lesson2\\res_conv.txt", "w") as file:
+with open("res_conv.txt", "w") as file:
     res = list(map(lambda u: ' '.join(map(str, u)) + "\n", res))
     file.writelines(res)
