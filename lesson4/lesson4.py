@@ -18,7 +18,7 @@ vec = np.random.randint(125, size=10)
 
 
 def func(v, n):
-    summ = np.cumsum(np.insert(vec, 0, 0))
+    summ = np.cumsum(np.insert(v, 0, 0))
     return (summ[n:] - summ[:-n]) / n
 
 
