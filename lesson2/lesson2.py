@@ -3,7 +3,7 @@ from random import randint
 # 1
 word1 = input("1:\nword = ")
 idx1 = len(word1) // 2
-if word1[:idx1] == word1[-idx1:][::-1] or len(word1) < 2:
+if word1[:idx1] == word1[-1:-idx1-1:-1] or len(word1) < 2:
     print("YES")
 else:
     print("NO")
