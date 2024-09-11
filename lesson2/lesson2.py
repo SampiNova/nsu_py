@@ -1,4 +1,4 @@
-from random import randint
+'''from random import randint
 
 # 1
 word1 = input("1:\nword = ")
@@ -50,7 +50,7 @@ with open("test6.txt", "r") as file:
         words += len(tmp)
         symbols += sum(map(lambda x: len(x), tmp))
         lines += 1
-print(f"6:\nlines: {lines}\nwords: {words}\nsymbols: {symbols}")
+print(f"6:\nlines: {lines}\nwords: {words}\nsymbols: {symbols}")'''
 
 # 7
 a, b = float(input("7:\nb1 = ")), float(input("q = "))
