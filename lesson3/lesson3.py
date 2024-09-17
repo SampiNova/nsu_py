@@ -153,13 +153,14 @@ class Inventory:
 
     @property
     def count(self):
-        return self.count
+        return self._count
 
     def get(self, idx, count):
         if self.inventory[idx] is None:
             return None
         else:
             res = self.inventory[idx].copy()
+            res._count = count
             self.inventory[idx] -= count
             if self.inventory[idx].count <= 0:
                 self.inventory[idx] = None
