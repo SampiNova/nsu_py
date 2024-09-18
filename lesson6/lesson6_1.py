@@ -43,6 +43,7 @@ def read_pairs():
     return pairs
 
 
+
 idx = 0
 if __name__ == "__main__":
     pairs_of_images = read_pairs()
