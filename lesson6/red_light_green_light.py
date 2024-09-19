@@ -33,7 +33,12 @@ for _ in range(n - 1):
 
 cap.release()
 
-plt.imshow(acc)
+frames[0] = np.where(frames[0] != 0, 1, 0)
+print(frames[0])
+print(np.min(acc[:, :, 0]), np.max(acc[:, :, 0]))
+print(np.min(acc[:, :, 1]), np.max(acc[:, :, 1]))
+print(np.min(acc[:, :, 2]), np.max(acc[:, :, 2]))
+
 '''fig, axiss = plt.subplots(ncols=10, nrows=5)
 axiss = np.reshape(np.array(axiss), (1, n))[0]
 
@@ -43,4 +48,4 @@ for i in range(n):
     else:
         axiss[i].imshow(frames[i][:, :, ::-1])'''
 
-plt.show()
+# plt.show()
