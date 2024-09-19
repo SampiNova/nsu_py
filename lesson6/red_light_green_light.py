@@ -24,20 +24,23 @@ cap = cv2.VideoCapture(0)
 
 n = 50
 frames = []
-for _ in range(n):
+acc = cap.read()[1] / n
+for _ in range(n - 1):
     _, frame = cap.read()
-    img = cv2.filter2D(frame, -1, kernel)
-    frames.append(img)
+    # img = cv2.filter2D(frame, -1, kernel)
+    acc += frame / n
+    frames.append(frame)
 
 cap.release()
 
-fig, axiss = plt.subplots(ncols=10, nrows=5)
+plt.imshow(acc)
+'''fig, axiss = plt.subplots(ncols=10, nrows=5)
 axiss = np.reshape(np.array(axiss), (1, n))[0]
 
 for i in range(n):
     if i > 0:
         axiss[i].imshow(frames[i - 1][:, :, ::-1] - frames[i][:, :, ::-1])
     else:
-        axiss[i].imshow(frames[i][:, :, ::-1])
+        axiss[i].imshow(frames[i][:, :, ::-1])'''
 
 plt.show()
