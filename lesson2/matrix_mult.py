@@ -15,7 +15,7 @@ with open("matrix_mult.txt", "r") as file:
             mat2.append(tmp)
 
 m, n, k = len(mat1), len(mat1[0]), len(mat2[0])
-res = [[0 for _ in range(k)] for _ in range(m)]
+res = [[0] * k] * m
 
 for r in range(m):
     for i in range(k):
