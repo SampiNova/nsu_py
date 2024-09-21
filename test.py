@@ -55,8 +55,6 @@ for k in range(n):
     for i in range(a * b):
         reds[k, i] = (frame[step_a * (i % a + 1), step_b * (i // a + 1), 2])
 frames = np.array(frames)
-frames = frames / 255
-reds = reds / 255
 
 cap.release()
 
@@ -67,7 +65,7 @@ mean = np.sum(frames, axis=0) / n
 print(np.min(frames[:, :, :, 2]), np.max(frames[:, :, :, 2]), np.mean(frames[:, :, :, 2]))
 print(np.min(frames[:, :, :, 1]), np.max(frames[:, :, :, 1]), np.mean(frames[:, :, :, 1]))
 print(np.min(frames[:, :, :, 0]), np.max(frames[:, :, :, 0]), np.mean(frames[:, :, :, 0]))
-axis2.plot(ox, (reds - 2 * MEAN + MIN) / (MAX - MIN) + 1.0)
+# axis2.plot(ox, (reds - 2 * MEAN + MIN) / (MAX - MIN) + 1.0)
 
 # f = furry(R["pixels"], n)
 # ox = np.linspace(0.0, n - 1, n)
