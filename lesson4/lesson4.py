@@ -4,9 +4,14 @@ import numpy as np
 np.random.seed(18182)
 a = np.random.randint(5, size=20)
 nums, freq = np.unique(a, return_counts=True)
-nums = list(nums)
+# ============================================
+new = np.stack((nums, freq), axis=-1)
+new = new[new[:, 1].argsort()]
+# ============================================
+lam = (lambda x: np.zeros((new[x, 1], 1)) + new[x, 0])
+new = [lam(i) for i in range(new.shape[0])]
 print(a)
-print(np.array(sorted(a, key=lambda x: int(freq[nums.index(x)]))))
+print(np.concatenate(new).reshape(a.shape))
 
 # 2
 h, w = 10, 20

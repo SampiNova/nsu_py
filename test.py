@@ -1,74 +1,55 @@
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-
-def analysis(image_):
-    global n
-    size_ = image_.shape[0] * image_.shape[1]
-    red_data = {"min": np.min(image_[:, :, 2]),
-                "max": np.max(image_[:, :, 2]),
-                "mean": np.mean(image_[:, :, 2]),
-                "pixels": image_[120, 120, 2],
-                "count": n,
-                "non_zero": np.count_nonzero(image_[:, :, 2])}
-    green_data = {"min": np.min(image_[:, :, 2]),
-                  "max": np.max(image_[:, :, 2]),
-                  "mean": np.mean(image_[:, :, 2]),
-                  "pixels": image_[120, 120, 1],
-                  "count": n,
-                  "non_zero": np.count_nonzero(image_[:, :, 2])}
-    blue_data = {"min": np.min(image_[:, :, 2]),
-                 "max": np.max(image_[:, :, 2]),
-                 "mean": np.mean(image_[:, :, 2]),
-                 "pixels": np.reshape(image_[:, :, 2], (n, 1)),
-                 "count": n,
-                 "non_zero": np.count_nonzero(image_[:, :, 2])}
-    return red_data, green_data, blue_data
-
-
-def furry(ys, N_):
-    w = np.exp(-2 * np.pi * 1j / N_)
-    W = np.fromfunction(lambda x, y: w ** (x * y), (N_, N_))
-    return (1 / np.sqrt(N_)) * W @ ys
-
-
-# ==============================================================================
-MIN = 0.06274509803921569
-MAX = 0.1450980392156863
-MEAN = 0.08654021675857848
-# ==============================================================================
 cap = cv2.VideoCapture(0)
 ret, frame = cap.read()
 
-n = 100
-width, height, _ = frame.shape
+MAX, MEAN, MIN = 44, 22.3, 15
+COLORS = []
+PROB = [1.95312500e-05, 4.03645833e-04, 1.61588542e-02, 1.37457682e-01,
+        2.63968099e-01, 2.54651693e-01, 1.72513021e-01, 9.13085938e-02,
+        4.18164063e-02, 1.64713542e-02, 3.99739583e-03, 9.50520833e-04,
+        1.62760417e-04, 9.11458333e-05, 1.30208333e-05, 9.76562500e-06,
+        6.51041667e-06]
+n = 10
+height, width, _ = frame.shape
 
 frames = [frame]
+red_maxes = []
+red_means = []
+red_mins = []
 
-for k in range(n):
+for k in range(n - 1):
     ret, frame = cap.read()
-    temp = frames[k] - frame
-    frames.append(np.abs(temp))
+    red_maxes.append(frame[:, :, 2].max())
+    red_means.append(frame[:, :, 2].mean())
+    red_mins.append(frame[:, :, 2].min())
+    frames.append(frame)
 
 frames = np.array(frames)
 
 cap.release()
+red_maxes = np.array(red_maxes)
+red_means = np.array(red_means)
+red_mins = np.array(red_mins)
+
+fig, (axis1, axis2) = plt.subplots(ncols=2)
+
+colors, counts = np.unique(frames[1][:, :, 2], return_counts=True)
+all_pixels = sum(counts)
 
 
-print(np.min(frames[:, :, :, 2]), np.max(frames[:, :, :, 2]), np.mean(frames[:, :, :, 2]))
-print(np.min(frames[:, :, :, 1]), np.max(frames[:, :, :, 1]), np.mean(frames[:, :, :, 1]))
-print(np.min(frames[:, :, :, 0]), np.max(frames[:, :, :, 0]), np.mean(frames[:, :, :, 0]))
-# axis2.plot(ox, (reds - 2 * MEAN + MIN) / (MAX - MIN) + 1.0)
+axis1.imshow(frames[1][:, :, 2])
 
-# f = furry(R["pixels"], n)
-# ox = np.linspace(0.0, n - 1, n)
+attract_points =
+h = np.fromfunction(lam_h, (height, width))
 
-'''fig, axiss = plt.subplots(ncols=a, nrows=b)
-print(axiss)
-for i in range(b):
-    for j in range(a):
-        axiss[i][j].plot(ox, reds[:, 2 * i + j])
-        axiss[i][j].grid()'''
+axis2.plot(colors, counts)
+
+print(red_maxes.max())
+print(red_means.mean())
+print(red_mins.min())
 
 plt.show()
