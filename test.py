@@ -44,24 +44,18 @@ ret, frame = cap.read()
 n = 100
 width, height, _ = frame.shape
 
-frames = []
-a, b = 2, 2
-step_a, step_b = width // (a + 2), height // (b + 2)
-reds = np.zeros((n, a * b))
+frames = [frame]
 
 for k in range(n):
     ret, frame = cap.read()
-    frames.append(frame)
-    for i in range(a * b):
-        reds[k, i] = (frame[step_a * (i % a + 1), step_b * (i // a + 1), 2])
+    temp = frames[k] - frame
+    frames.append(np.abs(temp))
+
 frames = np.array(frames)
 
 cap.release()
 
-fig, (axis1, axis2) = plt.subplots(ncols=2)
 
-ox = np.linspace(0.0, n - 1, n)
-mean = np.sum(frames, axis=0) / n
 print(np.min(frames[:, :, :, 2]), np.max(frames[:, :, :, 2]), np.mean(frames[:, :, :, 2]))
 print(np.min(frames[:, :, :, 1]), np.max(frames[:, :, :, 1]), np.mean(frames[:, :, :, 1]))
 print(np.min(frames[:, :, :, 0]), np.max(frames[:, :, :, 0]), np.mean(frames[:, :, :, 0]))
