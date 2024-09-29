@@ -6,7 +6,8 @@ while True:
     ret, frame = cap.read()
     key = cv2.waitKey(20) & 0xff
     # img = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-    cv2.imshow('Frame', cv2.medianBlur(frame, 5))
+
+    cv2.imshow('Frame', frame)
     if key == 27:
         break
 
