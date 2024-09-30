@@ -12,12 +12,10 @@ print(df)
 
 
 def date_func(row):
-    print(row[3], row[4][:11])
-    a = tuple(map(int, row[3].split("-")))
-    a = dtime.date(year=a[0], month=a[1], day=a[2])
-    b = tuple(map(int, row[4][:11].split("-")))
-    b = dtime.date(year=b[0], month=b[1], day=b[2])
-    return a - b
+    a = np.datetime64(row[3])
+    b = np.datetime64(row[4])
+    print(a, b, a - b)
+    return ()
 
 
 df_wi = pd.read_csv("wells_info.csv")
