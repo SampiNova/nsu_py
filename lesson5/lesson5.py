@@ -15,9 +15,10 @@ def date_func(row):
     a = np.datetime64(row[3])
     b = np.datetime64(row[4])
     print(a, b, a - b)
-    return ()
+    return int((a - b) / pd.Timedelta(days=30))
 
 
 df_wi = pd.read_csv("wells_info.csv")
 df_wi["Time"] = df_wi[:].apply(date_func, axis=1)
 print(df_wi)
+
