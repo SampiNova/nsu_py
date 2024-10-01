@@ -41,7 +41,7 @@ inp = np.random.randint(180, size=(n, 3))
 lam = (lambda y: y[0] + y[1] > y[2] and
                  y[0] + y[2] > y[1] and
                  y[1] + y[2] > y[0])
-print(list(filter(lam, inp)))
+print(inp[np.apply_along_axis(lam, 1, inp)])
 
 # 5
 print("\n5:")
