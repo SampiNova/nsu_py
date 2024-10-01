@@ -1,51 +1,27 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import cv2
-
-
-def smooth(lst):
-    global n
-
-    tmp = [lst[0]]
-    for i, e in zip(range(1, n - 1), lst[1:-1]):
-        tmp.append((lst[i - 1] + e + lst[i + 1]) // 3)
-    tmp.append(lst[-1])
-
-    return tmp
-
-
-# =======================================
-
-size = 6
-c = 1 / size ** 2
-kernel = np.array([[c] * size] * size)
-
+import numpy as np
 cap = cv2.VideoCapture(0)
+backSub = cv2.createBackgroundSubtractorMOG2()
 
-n = 50
-frames = []
-acc = cap.read()[1] / n
-for _ in range(n - 1):
-    _, frame = cap.read()
-    # img = cv2.filter2D(frame, -1, kernel)
-    acc += frame / n
-    frames.append(frame)
+while True:
+    ret, frame = cap.read()
+    key = cv2.waitKey(20) & 0xff
 
+    frame = cv2.medianBlur(frame, 5)
+    fg_mask = backSub.apply(frame)
+    retval, mask_thresh = cv2.threshold(fg_mask, 180, 255, cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    mask_eroded = cv2.morphologyEx(mask_thresh, cv2.MORPH_OPEN, kernel)
+
+    contours, hierarchy = cv2.findContours(mask_eroded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    min_area = 1000
+    max_area = 3000
+    large_contours = [cnt for cnt in contours if min_area < cv2.contourArea(cnt) < max_area]
+    frame_ct = cv2.drawContours(frame, contours, -1, (0, 255, 0), 2)
+
+    cv2.imshow('Frame', frame_ct)
+    if key == 27:
+        break
+
+cv2.destroyWindow('Frame')
 cap.release()
-
-frames[0] = np.where(frames[0] != 0, 1, 0)
-print(frames[0])
-print(np.min(acc[:, :, 0]), np.max(acc[:, :, 0]))
-print(np.min(acc[:, :, 1]), np.max(acc[:, :, 1]))
-print(np.min(acc[:, :, 2]), np.max(acc[:, :, 2]))
-
-'''fig, axiss = plt.subplots(ncols=10, nrows=5)
-axiss = np.reshape(np.array(axiss), (1, n))[0]
-
-for i in range(n):
-    if i > 0:
-        axiss[i].imshow(frames[i - 1][:, :, ::-1] - frames[i][:, :, ::-1])
-    else:
-        axiss[i].imshow(frames[i][:, :, ::-1])'''
-
-# plt.show()
