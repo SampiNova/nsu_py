@@ -17,11 +17,8 @@ with open(name2, "r") as file:
 n = len(x)
 
 # 1
-t1 = choices(x, k=n - round(n * P))
-t2 = choices(y, k=round(n * P))
-temp1 = np.array(t1 + t2)
-np.random.shuffle(temp1)
-print(temp1)
+selecter = np.random.choice([0, 1], n, p=[P, 1 - P])
+print(np.array(list(map(lambda t: np.random.choice(x) if t == 0 else np.random.choice(y), selecter))))
 
 # 2
 temp2 = np.array(x + y)
