@@ -80,7 +80,7 @@ models = {
 best_models = {}
 for model_name, (model, params) in models.items():
     grid_search = GridSearchCV(model, params, cv=5, scoring='accuracy')
-    grid_search.fit(scaled_X_train, df_y_train)
+    grid_search.fit(scaled_X_val, df_y_val)
     best_models[model_name] = grid_search.best_estimator_
     print(f"Best {model_name}: {grid_search.best_params_}")
 
