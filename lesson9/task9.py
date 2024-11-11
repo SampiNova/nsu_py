@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
 
 # sklearn
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, GridSearchCV, learning_curve
 from sklearn.preprocessing import MinMaxScaler
 
@@ -66,80 +66,26 @@ scaled_X_val = scaler.fit_transform(prep_df_X_val)
 scaled_X_test = scaler.fit_transform(prep_df_X_test)
 
 
-def find_hyper_params(model, param_grid, x_train, y_train):
-    grid_search = GridSearchCV(model, param_grid, cv=5, scoring='accuracy')
-    grid_search.fit(x_train, y_train)
+models = {
+    'RandomForest': (RandomForestClassifier(), {
+        'n_estimators': [50, 100],
+        'max_depth': [None, 5, 10]}),
+    'XGBoost': (XGBClassifier(), {
+        'n_estimators': [50, 100],
+        'max_depth': [3, 4, 5]}),
+    'LogisticRegression': (LogisticRegression(), {'C': [0.1, 1, 10]}),
+    'KNN': (KNeighborsClassifier(), {'n_neighbors': [3, 5, 7]})
+}
 
-    return grid_search.best_params_
+best_models = {}
+for model_name, (model, params) in models.items():
+    grid_search = GridSearchCV(model, params, cv=5, scoring='accuracy')
+    grid_search.fit(scaled_X_train, df_y_train)
+    best_models[model_name] = grid_search.best_estimator_
+    print(f"Best {model_name}: {grid_search.best_params_}")
 
-# k-NN
-knn_model = KNeighborsClassifier()
-
-hyper_params = find_hyper_params(knn_model,
-                                 {'n_neighbors': list(range(3, 10)),
-                                            'weights': ['uniform', 'distance'],
-                                            'metric': ['euclidean', 'manhattan']}, scaled_X_val, df_y_val)
-
-knn_model = KNeighborsClassifier(n_neighbors=hyper_params["n_neighbors"],
-                                 weights=hyper_params["weights"],
-                                 metric=hyper_params["metric"])
-knn_model.fit(scaled_X_train, df_y_train)
-knn_predict = knn_model.predict(scaled_X_test)
-
-print(hyper_params)
-print("KNN accuracy:", accuracy_score(df_y_test, knn_predict))
-
-# Logistic Regression
-lr_model = LogisticRegression()
-hyper_params = find_hyper_params(lr_model,
-                                 {'C': np.linspace(0.01, 1, 100),
-                                            'penalty': ['l1', 'l2'],
-                                            'solver': ['liblinear', 'saga']},
-                                 scaled_X_val, df_y_val)
-
-lr_model = LogisticRegression(C=hyper_params["C"],
-                              penalty=hyper_params["penalty"],
-                              solver=hyper_params["solver"])
-lr_model.fit(scaled_X_train, df_y_train)
-lr_predict = lr_model.predict(scaled_X_test)
-
-print(hyper_params)
-print("LR accuracy:", accuracy_score(df_y_test, lr_predict))
-
-# random forest classifier
-rfc_model = RandomForestClassifier()
-hyper_params = find_hyper_params(rfc_model,
-                                 {
-                                     'n_estimators': list(range(3, 300, 10)),
-                                     'max_depth': list(range(3, 10)),
-                                     'max_features': ['sqrt', 'log2']
-                                 },
-                                 scaled_X_val, df_y_val)
-
-rfc_model = RandomForestClassifier(n_estimators=hyper_params["n_estimators"],
-                                   max_depth=hyper_params["max_depth"],
-                                   max_features=hyper_params["max_features"])
-rfc_model.fit(scaled_X_train, df_y_train)
-rfc_predict = rfc_model.predict(scaled_X_test)
-
-print(hyper_params)
-print("RFC accuracy:", accuracy_score(df_y_test, rfc_predict))
-
-# xgboost
-xgb_model = XGBClassifier()
-hyper_params = find_hyper_params(xgb_model,
-                                 {
-                                     'n_estimators': list(range(3, 300, 10)),
-                                     'max_depth': list(range(3, 10)),
-                                     'subsample': [0.7, 0.8, 0.9]
-                                 },
-                                 scaled_X_val, df_y_val)
-
-xgb_model = XGBClassifier(n_estimators=hyper_params["n_estimators"],
-                          max_depth=hyper_params["max_depth"],
-                          subsample=hyper_params["subsample"])
-xgb_model.fit(scaled_X_train, df_y_train)
-xgb_predict = rfc_model.predict(scaled_X_test)
-
-print(hyper_params)
-print("XGB accuracy:", accuracy_score(df_y_test, xgb_predict))
+print("==============================")
+for model_name, model in best_models.items():
+    y_pred = model.predict(scaled_X_test)
+    accuracy = accuracy_score(df_y_test, y_pred)
+    print(f"{model_name} Test Accuracy:", accuracy)
