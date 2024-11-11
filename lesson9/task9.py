@@ -78,7 +78,7 @@ knn_model = KNeighborsClassifier()
 hyper_params = find_hyper_params(knn_model,
                                  {'n_neighbors': list(range(3, 10)),
                                             'weights': ['uniform', 'distance'],
-                                            'metric': ['euclidean', 'manhattan']}, scaled_X_train, df_y_train)
+                                            'metric': ['euclidean', 'manhattan']}, scaled_X_val, df_y_val)
 
 knn_model = KNeighborsClassifier(n_neighbors=hyper_params["n_neighbors"],
                                  weights=hyper_params["weights"],
@@ -95,7 +95,7 @@ hyper_params = find_hyper_params(lr_model,
                                  {'C': np.linspace(0.01, 1, 100),
                                             'penalty': ['l1', 'l2'],
                                             'solver': ['liblinear', 'saga']},
-                                 scaled_X_train, df_y_train)
+                                 scaled_X_val, df_y_val)
 
 lr_model = LogisticRegression(C=hyper_params["C"],
                               penalty=hyper_params["penalty"],
@@ -110,16 +110,14 @@ print("LR accuracy:", accuracy_score(df_y_test, lr_predict))
 rfc_model = RandomForestClassifier()
 hyper_params = find_hyper_params(rfc_model,
                                  {
-                                     'n_estimators': list(range(10, 500)),
-                                     'max_depth': list(range(3, 20)),
-                                     'min_samples_split': list(range(3, 20)),
+                                     'n_estimators': list(range(3, 300, 10)),
+                                     'max_depth': list(range(3, 10)),
                                      'max_features': ['sqrt', 'log2']
                                  },
-                                 scaled_X_train, df_y_train)
+                                 scaled_X_val, df_y_val)
 
 rfc_model = RandomForestClassifier(n_estimators=hyper_params["n_estimators"],
                                    max_depth=hyper_params["max_depth"],
-                                   min_samples_split=hyper_params["min_samples_split"],
                                    max_features=hyper_params["max_features"])
 rfc_model.fit(scaled_X_train, df_y_train)
 rfc_predict = rfc_model.predict(scaled_X_test)
@@ -131,16 +129,14 @@ print("RFC accuracy:", accuracy_score(df_y_test, rfc_predict))
 xgb_model = XGBClassifier()
 hyper_params = find_hyper_params(xgb_model,
                                  {
-                                     'n_estimators': list(range(10, 500)),
-                                     'max_depth': list(range(3, 20)),
-                                     'learning_rate': np.linspace(0.01, 0.5, 100),
-                                     'subsample': [0.7, 0.8, 0.9],
+                                     'n_estimators': list(range(3, 300, 10)),
+                                     'max_depth': list(range(3, 10)),
+                                     'subsample': [0.7, 0.8, 0.9]
                                  },
-                                 scaled_X_train, df_y_train)
+                                 scaled_X_val, df_y_val)
 
 xgb_model = XGBClassifier(n_estimators=hyper_params["n_estimators"],
                           max_depth=hyper_params["max_depth"],
-                          learning_rate=hyper_params["learning-rate"],
                           subsample=hyper_params["subsample"])
 xgb_model.fit(scaled_X_train, df_y_train)
 xgb_predict = rfc_model.predict(scaled_X_test)
