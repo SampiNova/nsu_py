@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torchvision
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, recall_score, precision_score
 from sklearn.manifold import TSNE
 
 
@@ -65,19 +65,16 @@ class Ensemble:
 
 
 def test_model(_model, X, Y, unit=False):
-    good = 0
-    count = 0
-    if unit:
-        for x in X:
-            if _model.predict_digit(x, Y) >= 0.65:
-                good += 1
-            count += 1
-    else:
-        for x, y in zip(X, Y):
-            if np.argmax(y) == np.argmax(_model.predict(x)):
-                good += 1
-            count += 1
-    return good / count
+    accuracy_res = []
+    precision_res = []
+    recall_res = []
+    for x, y in zip(X, Y):
+        pred = np.where(_model.predict(x) > 0.65, 1, 0)
+
+        accuracy_res.append(accuracy_score(y, pred, zero_division=0.0))
+        precision_res.append(precision_score(y, pred, zero_division=0.0))
+        recall_res.append(recall_score(y, pred, zero_division=0.0))
+    return np.mean(accuracy_res), np.mean(precision_res), np.mean(recall_res)
 
 
 train_data = torchvision.datasets.MNIST(
@@ -97,26 +94,36 @@ test = Data(test_data)
 model = Ensemble(train.average_digits, [-13, -6, -18, -12, -9, -12, -15, -10, -16, -11])
 
 tstX, tstY = test.iter()
-# tstX = list(test.get_by_digit(2))
+'''for i in range(10):
+    print(f"{i} - accuracy:", test_model(model, test.get_by_digit(i), i, True))'''
+acc, prec, rec = test_model(model, np.array(list(tstX)), np.array(list(tstY)))
+print(f"Accuracy: {acc}\nPrecision: {prec}\nRecall: {rec}")
 
-print(test_model(model, tstX, tstY))
+tests = []
+res = []
+for i in range(10):
+    tsne_model = TSNE(n_components=2, perplexity=20)
+    t = np.array(list(test.get_by_digit(i)))[:30]
+    squeezed = tsne_model.fit_transform(t)
+    tests.append(squeezed)
 
-'''I = 9
-results = []
-model.b[I] = 0
-results.append(test_model(model, tstX, I, True))
-for i in range(1, 101):
-    model.b[I] = i
-    results.append(test_model(model, tstX, I, True))
-    model.b[I] = -i
-    results = [(test_model(model, tstX, I, True))] + results
+    temp = []
+    for e in t:
+        temp.append(model.predict(e))
+    tsne_model = TSNE(n_components=2, perplexity=20)
+    squeezed = tsne_model.fit_transform(np.array(temp))
+    res.append(squeezed)
 
-plt.plot(list(range(-100, 101)), results)
-plt.show()'''
+fig, (axis1, axis2) = plt.subplots(ncols=2, nrows=1)
 
-'''for i, digit in enumerate(train.average_digits):
-    plt.subplot(2, 5, i + 1)
-    plt.imshow(np.reshape(digit, (28, 28)), cmap="inferno")
-plt.show()'''
+axis1.set_aspect(1)
+for i in range(10):
+    axis1.scatter(tests[i][:, 0], tests[i][:, 1], label=str(i))
+axis1.legend()
 
+axis2.set_aspect(1)
+for i in range(10):
+    axis2.scatter(res[i][:, 0], res[i][:, 1], label=str(i))
+axis2.legend()
 
+plt.show()

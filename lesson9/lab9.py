@@ -47,7 +47,10 @@ feature_importances = models_all_params["DT"].feature_importances_
 sorted_indices = np.argsort(feature_importances)[::-1]
 
 selected_features = sorted_indices[:2]
+# selected_Y_train = df_y_train.iloc[:, selected_features]
 selected_X_train = scaled_X_train.iloc[:, selected_features]
+
+# selected_Y_tst = df_y_test.iloc[:, selected_features]
 selected_X_test = scaled_X_test.iloc[:, selected_features]
 
 models_two_params = {"LR": LogisticRegression(C=1),
