@@ -69,11 +69,12 @@ def test_model(_model, X, Y, unit=False):
     precision_res = []
     recall_res = []
     for x, y in zip(X, Y):
-        pred = np.where(_model.predict(x) > 0.65, 1, 0)
+        maxi = np.argmax(_model.predict(x))
+        pred = encode_label(maxi)
 
-        accuracy_res.append(accuracy_score(y, pred, zero_division=0.0))
+        accuracy_res.append(accuracy_score(y, pred))
         precision_res.append(precision_score(y, pred, zero_division=0.0))
-        recall_res.append(recall_score(y, pred, zero_division=0.0))
+        recall_res.append(recall_score(y, pred))
     return np.mean(accuracy_res), np.mean(precision_res), np.mean(recall_res)
 
 
