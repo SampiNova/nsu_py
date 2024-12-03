@@ -90,7 +90,6 @@ for i in range(100):
     for xj, yj in zip(dataX, dataY):
         pred = first_neuron.forward(xj)
         dEdt = first_neuron.backprop(xj, derror(pred, yj))
-        # dEdx = np.asarray(dEdt) @ first_neuron.weights
         first_neuron.update(lam)
     pred = np.array([first_neuron.forward(xj) for xj in dataX])
     mse = np.mean(error(pred, dataY))
