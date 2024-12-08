@@ -1,99 +1,113 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
+
+def reshape(array):
+    array = np.asarray(array)
+    if len(array.shape) < 2:
+        return np.expand_dims(array, 0)
+    return array
+
+def xavier_normal(shape, gain=1.0):
+  fan_in, fan_out = shape[0], shape[1]
+  stddev = gain * np.sqrt(2.0 / (fan_in + fan_out))
+  return np.random.normal(0, stddev, size=shape)
+
+
+error = (lambda x, y: (np.asarray(x) - np.asarray(y)) ** 2)
+derror = (lambda x, y: (np.asarray(x) - np.asarray(y)) * 2)
 
 class Neuron:
     def __init__(self, input_weights, bias):
         self.weights = np.asarray(input_weights)
-        self.bias =np.asarray(bias)
+        self.bias = np.asarray(bias)
         self.f = (lambda x: 1 / (1 + np.exp(-x)))
         self.df = (lambda x: self.f(x) * (1 - self.f(x)))
 
+        self.X = None
         self.db = None
         self.dw = None
         self.t = None
         self.h = None
 
     def forward(self, X):
-        self.t = np.asarray(X) @ self.weights + self.bias
+        self.X = reshape(X)
+        self.t = self.X @ self.weights + self.bias
         self.h = self.f(self.t)
         return self.h
 
-    def backprop(self, X, dEdh):
-        self.db = np.asarray(dEdh) * self.df(self.t)  # sEdb
-        self.dw = self.db * np.asarray(X)
-        return self.db
+    def backprop(self, dEdh):
+        self.db = dEdh * self.df(self.t)[0]
+        # print("db:", self.db)
+        self.dw = self.X.T @ self.db
+        self.dw = reshape(self.dw).T
+        # print("dw:", self.dw)
+        return self.db @ self.weights.T
 
     def update(self, mu):
         self.bias -= mu * self.db
         self.weights -= mu * self.dw
 
-first_neuron = Neuron(np.random.uniform(0.0, 1.0, 2), np.random.uniform(0.0, 1.0))
 
-dataX = [[0, 0], [0, 1], [1, 0], [1, 1]]
-dataY = [0, 1, 1, 0]
-lam = 0.01
-
-error = (lambda x, y: np.sum((np.asarray(x) - np.asarray(y)) ** 2))
-
-res = list()
-for i in range(100):
-    for xj, yj in zip(dataX, dataY):
-        pred = first_neuron.forward(xj)
-        dEdt = first_neuron.backprop(xj, error(pred, yj))
-        dEdx = np.asarray(dEdt) @ first_neuron.weights
-        first_neuron.update(lam)
-    pred = sum([error(xi, yi) for xi, yi in zip(dataX, dataY)]) / 4
-    res.append(pred)
-
-plt.plot(list(range(len(res))), res)
-plt.show()
-import numpy as np
-import matplotlib.pyplot as plt
-
-class Neuron:
-    def __init__(self, input_weights, bias):
-        self.weights = np.asarray(input_weights)
-        self.bias =np.asarray(bias)
-        self.f = (lambda x: x)
-        self.df = (lambda x: x ** 0)
-
-        self.db = None
-        self.dw = None
-        self.t = None
-        self.h = None
+class Model:
+    def __init__(self, layers):
+        self.layers = []
+        for i in range(1, len(layers)):
+            neurons = []
+            for j in range(layers[i]):
+                neurons.append(Neuron(xavier_normal((layers[i - 1], 1)), xavier_normal((1, 1))))
+            self.layers.append(neurons)
 
     def forward(self, X):
-        self.t = np.asarray(X) @ self.weights + self.bias
-        self.h = self.f(self.t)
-        return self.h
+        last = np.asarray(X)
+        for layer in self.layers:
+            last = np.asarray([neuron.forward(last)[0] for neuron in layer]).T
+        return last
 
-    def backprop(self, X, dEdh):
-        self.db = np.asarray(dEdh) * self.df(self.t)  # sEdb
-        self.dw = self.db * np.asarray(X)
-        return self.db
+    def backprop(self, dEdh):
+        last_dx = np.asarray(dEdh)
+        for layer in self.layers[::-1]:
+            new_dx = np.asarray([neuron.backprop(dx) for neuron, dx in zip(layer, last_dx)])
+            # print(new_dx)
+            last_dx = np.sum(new_dx, 0)
+            # print(last_dx)
 
     def update(self, mu):
-        self.bias -= mu * self.db
-        self.weights -= mu * self.dw
+        for layer in self.layers:
+            for neuron in layer:
+                neuron.update(mu)
 
-first_neuron = Neuron(np.random.uniform(0.0, 1.0, 2), np.random.uniform(0.0, 1.0))
 
-dataX = [[0, 0], [0, 1], [1, 0], [1, 1]]
-dataY = [0, 1, 1, 0]
+myX = np.asarray([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float64)
+myY = np.asarray([0, 1, 1, 0], dtype=np.float64)
+size = len(myY)
+
 lam = 0.01
+epoch = 100000
 
-error = (lambda x, y: (np.asarray(x) - np.asarray(y)) ** 2)
-derror = (lambda x, y: 2 * (np.asarray(x) - np.asarray(y)))
+model = Model([2, 2, 1])
 
-res = list()
-for i in range(100):
-    for xj, yj in zip(dataX, dataY):
-        pred = first_neuron.forward(xj)
-        dEdt = first_neuron.backprop(xj, derror(pred, yj))
-        first_neuron.update(lam)
-    pred = np.array([first_neuron.forward(xj) for xj in dataX])
-    mse = np.mean(error(pred, dataY))
-    res.append(mse)
+test = []
+for _ in range(epoch):
+    for i in range(size):
+        pred = model.forward(myX[i])
+        model.backprop(derror(pred, myY[i]))
+        model.update(lam)
+    temp = []
+    for i in range(size):
+        pred = model.forward(myX[i])
+        temp.append(error(pred, myY[i])[0, 0])
+    test.append(sum(temp) / size)
 
-plt.plot(list(range(len(res))), res)
+my_pred = []
+for obj in myX:
+    pred = model.forward(obj)[0][0]
+    my_pred.append(pred)
+    print(pred)
+my_pred = np.round(np.asarray(my_pred))
+
+print(accuracy_score(myY, my_pred))
+
+X = list(range(1, len(test) + 1))
+plt.plot(X, test)
 plt.show()
