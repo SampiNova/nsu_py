@@ -99,6 +99,10 @@ for _ in range(epoch):
         temp.append(error(pred, myY[i])[0, 0])
     test.append(sum(temp) / size)
 
+for layer in model.layers:
+    for neuron in layer:
+
+
 my_pred = []
 for obj in myX:
     pred = model.forward(obj)[0][0]
