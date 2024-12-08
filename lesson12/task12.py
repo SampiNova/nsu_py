@@ -82,7 +82,7 @@ myX = np.asarray([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float64)
 myY = np.asarray([0, 1, 1, 0], dtype=np.float64)
 size = len(myY)
 
-lam = 0.01
+lam = 0.001
 epoch = 100000
 
 model = Model([2, 2, 1])
@@ -101,6 +101,7 @@ for _ in range(epoch):
 
 for layer in model.layers:
     for neuron in layer:
+        print(neuron.weights)
 
 
 my_pred = []
