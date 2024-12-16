@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
+from triton.language import dtype
+
 
 def reshape(array):
     array = np.asarray(array)
@@ -54,8 +56,10 @@ class Model:
         self.layers = []
         for i in range(1, len(layers)):
             neurons = []
+            weights = xavier_normal((layers[i - 1], layers[i]))
+            biases = xavier_normal((layers[i], 1))
             for j in range(layers[i]):
-                neurons.append(Neuron(xavier_normal((layers[i - 1], 1)), xavier_normal((1, 1))))
+                neurons.append(Neuron(reshape(weights[:, j]).T, reshape(biases[j])))
             self.layers.append(neurons)
 
     def forward(self, X):
@@ -82,22 +86,30 @@ myX = np.asarray([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float64)
 myY = np.asarray([0, 1, 1, 0], dtype=np.float64)
 size = len(myY)
 
-lam = 0.001
+lam = 0.1
 epoch = 100000
 
 model = Model([2, 2, 1])
 
 test = []
+test_acc = []
 for _ in range(epoch):
     for i in range(size):
         pred = model.forward(myX[i])
-        model.backprop(derror(pred, myY[i]))
+        model.backprop(np.round(derror(pred, myY[i])))
         model.update(lam)
     temp = []
+    temp_acc = []
     for i in range(size):
         pred = model.forward(myX[i])
+        temp_acc.append(np.round(pred[0][0]))
         temp.append(error(pred, myY[i])[0, 0])
-    test.append(sum(temp) / size)
+
+    test.append(np.mean(temp))
+    accur = accuracy_score(myY, temp_acc)
+    test_acc.append(accur)
+    if accur > 0.8:
+        break
 
 for layer in model.layers:
     for neuron in layer:
@@ -115,4 +127,5 @@ print(accuracy_score(myY, my_pred))
 
 X = list(range(1, len(test) + 1))
 plt.plot(X, test)
+plt.plot(X, test_acc)
 plt.show()
