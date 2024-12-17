@@ -56,10 +56,14 @@ def process_frame(frame, model, transform):
     heatmap = cv2.applyColorMap(cam, cv2.COLORMAP_JET)
     result = cv2.addWeighted(frame, 0.8, heatmap, 0.3, 0)
 
-    return result
+    return result, predicted_class
 
 
 if __name__ == "__main__":
+
+    with open("imagenet_classes.txt", "r") as file:
+        classes = list(map(lambda x: x[:-1], file.readlines()))
+
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Не удалось открыть камеру")
@@ -71,7 +75,10 @@ if __name__ == "__main__":
             print("Не удалось получить кадр")
             break
 
-        result = process_frame(frame, model, transform)
+        result, pred = process_frame(frame, model, transform)
+
+        cv2.putText(result, f"Class: {classes[pred - 1]}", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                    (255, 255, 255), 2, cv2.LINE_AA)
 
         cv2.imshow('CAM', result)
         if cv2.waitKey(1) & 0xFF == ord('q'):

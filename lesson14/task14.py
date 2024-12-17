@@ -1,83 +1,71 @@
 import torch
+import torch.nn as nn
 import numpy as np
+import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
-def im2col(image, kernel_size):
-    """
-    Преобразует изображение в матрицу столбцов для быстрой свёртки.
+def im2col(image, kernel_size=1, stride=1, padding=0):
+    N, C, H, W = image.shape
 
-    Args:
-        image: Входное изображение как numpy массив (H, W, C).
-        kernel_size: Размер ядра свёртки (kH, kW).
+    padded = F.pad(image, [padding] * 4, mode='constant', value=0)
 
-    Returns:
-        Матрица столбцов (kH*kW*C, N), где N - число участков изображения.
-    """
-    H, W, C = image.shape
-    kH, kW = kernel_size
+    _, _, padded_H, padded_W = padded.shape
 
-    if H < kH or W < kW:
-        raise ValueError("Размер ядра свёртки больше размера изображения.")
+    output_H = (padded_H - kernel_size) // stride + 1
+    output_W = (padded_W - kernel_size) // stride + 1
 
-    cols = []
-    for i in range(H - kH + 1):
-        for j in range(W - kW + 1):
-            patch = image[i:i+kH, j:j+kW, :]
-            cols.append(patch.reshape(-1))  # Преобразуем участок в столбец
+    cols = torch.zeros((N, C * kernel_size * kernel_size, output_H * output_W), device=image.device)
+    for i in range(output_H):
+        for j in range(output_W):
+            patch = padded[:, :, i * stride:i * stride + kernel_size, j * stride:j * stride + kernel_size]
+            cols[:, :, i * output_W + j] = patch.reshape(N, -1)
 
-    return np.array(cols).T
+    return cols
 
+def conv2d_no_loops(image, kernel, stride=1, padding=0):
+    N, C, H, W = image.shape
+    K, _, KH, KW = kernel.shape
 
-def conv2d_no_loops(image, kernel, bias=None):
-    """
-    Свёртка без использования циклов, использующая im2col.
-
-    Args:
-        image: Входное изображение как numpy массив (H, W, C).
-        kernel: Ядро свёртки как numpy массив (kH, kW, C, K), где K - количество фильтров.
-        bias: Вектор смещения (K,).
-
-    Returns:
-        Результат свёртки как numpy массив.
-    """
-    kH, kW, C, K = kernel.shape
-    image_cols = im2col(image, (kH, kW))
+    cols = im2col(image, kernel_size=KH, stride=stride, padding=padding)
     kernel_reshaped = kernel.reshape(K, -1)
-    output = kernel_reshaped @ image_cols
-    if bias is not None:
-        output += bias[:, None]
-    H_out = image.shape[0] - kH + 1
-    W_out = image.shape[1] - kW + 1
-    return output.reshape(K, H_out, W_out)
 
+    output_H = (H + 2 * padding - KH) // stride + 1
+    output_W = (W + 2 * padding - KW) // stride + 1
 
-# Пример использования и сравнение с torch.nn.Conv2d:
+    output = kernel_reshaped @ cols
+    output = output.reshape(K, output_H, output_W, N).permute(3, 0, 1, 2)
 
-# Входные данные
-image_np = np.random.rand(32, 32, 3).astype(np.float32)  # (H, W, C)
-kernel_np = np.random.rand(3, 3, 3, 8).astype(np.float32)  # (kH, kW, C, K)
-bias_np = np.random.rand(8).astype(np.float32)
+    return output
 
-# Моя реализация
-output_no_loops = conv2d_no_loops(image_np, kernel_np, bias_np)
+batch_size = 1
+channels = 3
+height = 28
+width = 28
+out_channels = 32
+k_size = 3
 
-# PyTorch реализация
-image_torch = torch.tensor(image_np)
-kernel_torch = torch.tensor(kernel_np)
-bias_torch = torch.tensor(bias_np)
+input_data = torch.randn(batch_size, channels, height, width)
+for c in range(channels):
+    for i in range(height):
+        for j in range(width):
+            input_data[0, c, i, j] = i + j  + 1
+kernel = torch.randn(out_channels, channels, k_size, k_size)
 
-conv_layer = torch.nn.Conv2d(3, 8, kernel_size=3, bias=True)
-conv_layer.weight.data = kernel_torch
-conv_layer.bias.data = bias_torch
-output_pytorch = conv_layer(image_torch.unsqueeze(0)).squeeze(0) #unsqueeze(0) добавляет batch размерность
+no_loop_conv = conv2d_no_loops(input_data, kernel=kernel, padding=1)
 
+conv_layer = nn.Conv2d(in_channels=channels, out_channels=out_channels,
+                       kernel_size=k_size, stride=1, padding=1, bias=False)
+conv_layer.weight.data = kernel
+torch_conv = conv_layer(input_data)
 
-# Сравнение
-diff = np.abs(output_no_loops - output_pytorch.detach().numpy())
-max_diff = np.max(diff)
-print(f"Максимальное различие между результатами: {max_diff}")
+print(no_loop_conv.mean(), torch_conv.mean())
+print(no_loop_conv.max(), torch_conv.max())
+print(no_loop_conv.min(), torch_conv.min())
+print(torch.mean(torch.abs(no_loop_conv - torch_conv)))
 
-# Проверка на малое различие (должно быть близко к нулю из-за погрешности вычислений)
-assert np.allclose(output_no_loops, output_pytorch.detach().numpy(), atol=1e-5), "Результаты сильно отличаются!"
-print("Результаты совпадают!")
+plt.subplot(1, 2, 1)
+plt.imshow(no_loop_conv[0, 0, :, :].detach().numpy())
+plt.subplot(1, 2, 2)
+plt.imshow(torch_conv[0, 0, :, :].detach().numpy())
 
-
+plt.show()

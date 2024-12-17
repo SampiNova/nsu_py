@@ -58,12 +58,12 @@ combined_model = CombinedModel()
 
 linear_input = torch.randn(1, 256)
 linear_output = linear_model(linear_input)
-print("Выход линейной модели:", linear_output)
+print("Linear:", linear_output)
 
 conv_input = torch.randn(1, 3, 19, 19)
 conv_output = conv_model(conv_input)
-print("Выход сверточной модели:", conv_output)
+print("Conv:", conv_output)
 
 combined_input = torch.randn(1, 3, 19, 19)
 combined_output = combined_model(combined_input)
-print("Выход комбинированной модели:", combined_output)
+print("Comb:", combined_output)
