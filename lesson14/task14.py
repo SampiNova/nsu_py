@@ -37,7 +37,7 @@ def conv2d_no_loops(image, kernel, stride=1, padding=0):
 
     return output
 
-batch_size = 1
+batch_size = 2
 channels = 3
 height = 28
 width = 28
@@ -45,10 +45,10 @@ out_channels = 32
 k_size = 3
 
 input_data = torch.randn(batch_size, channels, height, width)
-for c in range(channels):
+'''for c in range(channels):
     for i in range(height):
         for j in range(width):
-            input_data[0, c, i, j] = i + j  + 1
+            input_data[0, c, i, j] = i + j  + 1'''
 kernel = torch.randn(out_channels, channels, k_size, k_size)
 
 no_loop_conv = conv2d_no_loops(input_data, kernel=kernel, padding=1)
